@@ -1,68 +1,30 @@
-App = {
-  web3Provider: null,
-  contracts: {},
+const Web3 = require('web3');
+const { abi: usersABI } = require('./build/Users.json');
+const { abi: groupsABI } = require('./build/Groups.json');
 
-  init: async function() {
-    // Load pets.
-    $.getJSON('../pets.json', function(data) {
-      var petsRow = $('#petsRow');
-      var petTemplate = $('#petTemplate');
+const web3 = new Web3('http://localhost:8545'); // replace with your local node endpoint
 
-      for (i = 0; i < data.length; i ++) {
-        petTemplate.find('.panel-title').text(data[i].name);
-        petTemplate.find('img').attr('src', data[i].picture);
-        petTemplate.find('.pet-breed').text(data[i].breed);
-        petTemplate.find('.pet-age').text(data[i].age);
-        petTemplate.find('.pet-location').text(data[i].location);
-        petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
+const usersContractAddress = '0x123456...'; // replace with your deployed contract address
+const groupsContractAddress = '0x789abc...'; // replace with your deployed contract address
 
-        petsRow.append(petTemplate.html());
-      }
-    });
+const usersContract = new web3.eth.Contract(usersABI, usersContractAddress);
+const groupsContract = new web3.eth.Contract(groupsABI, groupsContractAddress);
 
-    return await App.initWeb3();
-  },
+// Example function that uses both contracts
+async function example() {
+  const accounts = await web3.eth.getAccounts();
 
-  initWeb3: async function() {
-    /*
-     * Replace me...
-     */
+  // Use the Users contract
+  const username = 'alice';
+  await usersContract.methods.createUser(username).send({ from: accounts[0] });
+  const user = await usersContract.methods.getUserByUsername(username).call();
+  console.log(`User ${username} created with ID ${user.id}`);
 
-    return App.initContract();
-  },
+  // Use the Groups contract
+  const groupName = 'test group';
+  await groupsContract.methods.createGroup(groupName, true).send({ from: accounts[0] });
+  const group = await groupsContract.methods.getGroupByName(groupName).call();
+  console.log(`Group ${groupName} created with ID ${group.id}`);
+}
 
-  initContract: function() {
-    /*
-     * Replace me...
-     */
-
-    return App.bindEvents();
-  },
-
-  bindEvents: function() {
-    $(document).on('click', '.btn-adopt', App.handleAdopt);
-  },
-
-  markAdopted: function() {
-    /*
-     * Replace me...
-     */
-  },
-
-  handleAdopt: function(event) {
-    event.preventDefault();
-
-    var petId = parseInt($(event.target).data('id'));
-
-    /*
-     * Replace me...
-     */
-  }
-
-};
-
-$(function() {
-  $(window).load(function() {
-    App.init();
-  });
-});
+example().catch(console.error);
