@@ -4,7 +4,7 @@ const path = require("path");
 const solc = require("solc");
 
 // Load contract
-const groupsContractData = fs.readFileSync(path.join(__dirname, "../contracts/Groups.sol"), "utf-8");
+const usersContractData = fs.readFileSync(path.join(__dirname, "../contracts/Users.sol"), "utf-8");
 
 // Create web3 instance
 const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
@@ -16,8 +16,8 @@ web3.eth.defaultAccount = web3.eth.accounts[0];
 const input = {
   language: "Solidity",
   sources: {
-    "Groups.sol": {
-      content: groupsContractData,
+    "Users.sol": {
+      content: usersContractData,
     },
   },
   settings: {
@@ -31,17 +31,15 @@ const input = {
 
 const compiledContracts = JSON.parse(solc.compile(JSON.stringify(input)));
 
-const compiledGroupsContract = compiledContracts.contracts["Groups.sol"]["Groups"];
+const compiledUsersContract = compiledContracts.contracts["Users.sol"]["Users"];
 
 // Deploy contract
-const groupsAbiDefinition = compiledGroupsContract.abi;
-const groupsContract = new web3.eth.Contract(groupsAbiDefinition);
+const usersAbiDefinition = compiledUsersContract.abi;
+const usersContract = new web3.eth.Contract(usersAbiDefinition);
 
-const usersContractAddress = "<address-of-users-contract>"; // Replace with actual address of Users contract
-
-const groupsContractInstance = groupsContract.deploy({
-    data: "0x" + compiledGroupsContract.evm.bytecode.object,
-    arguments: [usersContractAddress]
+const usersContractInstance = usersContract.deploy({
+    data: "0x" + compiledUsersContract.evm.bytecode.object,
+    arguments: []
   })
   .send({
     from: web3.eth.accounts[0],
@@ -54,5 +52,5 @@ const groupsContractInstance = groupsContract.deploy({
     }
   })
   .then(function (newContractInstance) {
-    console.log(`Groups contract deployed at ${newContractInstance.options.address}`);
+    console.log(`Users contract deployed at ${newContractInstance.options.address}`);
   });
